@@ -1,6 +1,6 @@
 # GG-vs-Goons-plugin
 
-A modular Bukkit/Paper plugin for the GG vs Goons server, featuring a war prisoner system and team-based PvP mechanics.
+A modular Bukkit/Paper plugin for the GG vs Goons server, featuring a war prisoner system and more planned in the future.
 
 Built around a module system - each mechanic is a self-contained class, so adding new commands doesn't mean touching existing ones.
 
@@ -160,7 +160,7 @@ permissions:
 
 ### Module System Architecture
 
-```mermaid
+```
 graph TB
     A[GGvGPlugin] --> B[Module System]
     B --> C[WarPrisonerModule]
@@ -351,6 +351,5 @@ Contributions are welcome! When adding new modules:
 4. Test on both Paper and Arclight if possible
 5. Update this README with new features
 
-## License
-
-[Add your license here]
+## AI
+AI was used to contribute this project. This is only made for a short and fun server and not a serious project.

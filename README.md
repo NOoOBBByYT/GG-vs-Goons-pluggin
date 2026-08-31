@@ -132,7 +132,7 @@ Future `config.yml` will include:
 
 ### Module System Architecture
 
-```mermaid
+```
 graph TB
     A[GGvGPlugin] --> B[Module System]
     B --> C[WarPrisonerModule]

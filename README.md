@@ -31,22 +31,23 @@ This plugin is designed to work on **Arclight** servers (Bukkit API on Forge). K
 Capture defeated enemies as prisoners with a consent-based system.
 
 **Commands:**
-- `/warprisoner <player>` - Send a capture offer to a player
-- `/freeprisoner <player>` - Release your prisoner, restores their original gamemode
-- `/executeprisoner <player>` - End imprisonment without restoring gamemode (for RP executions)
+- `/warprisoner <player>` - Send a capture offer to a player (requires `ggvgoons.warprisoner.capture`)
+- `/freeprisoner <player>` - Release your prisoner, restores their original gamemode (requires `ggvgoons.warprisoner.free`)
+- `/executeprisoner <player>` - End imprisonment without restoring gamemode (requires `ggvgoons.warprisoner.execute`)
+- `/listprisoners` - View all active prisoners and their captors (requires `ggvgoons.warprisoner.list`)
 
 **How it works:**
 1. Captor uses `/warprisoner <target>` to send a clickable capture offer
 2. Target sees: `[Accept]` or `[Decline]` buttons in chat
 3. **Accept** → Target becomes a prisoner, switched to Adventure mode
 4. **Decline** → Nothing happens; it's on the captor to kill or free them
-5. Captor can later `/freeprisoner` to release or `/executeprisoner` to end the arrangement
+5. Offers automatically expire after 60 seconds (configurable in `config.yml`)
+6. Captor can later `/freeprisoner` to release or `/executeprisoner` to end the arrangement
+7. Prisoner state persists across server restarts
 
 **Current Limitations:**
 - No team validation (anyone can capture anyone - Teams module will fix this)
 - No movement restrictions (prisoners can walk away - future event listeners will add boundaries)
-- No persistence (state resets on server restart)
-- No offer expiry (capture offers stay open indefinitely)
 
 ### Planned Modules
 
@@ -105,8 +106,8 @@ Capture defeated enemies as prisoners with a consent-based system.
 
 ## Configuration
 
-### Permission Nodes (Planned)
-Currently all commands require OP status. Future versions will support:
+### Permission Nodes
+The plugin now includes a full permission system. All permissions default to OP status but can be managed via LuckPerms or any permission plugin:
 
 ```yaml
 permissions:
@@ -119,14 +120,41 @@ permissions:
   ggvgoons.warprisoner.execute:
     description: Allows executing prisoners
     default: op
+  ggvgoons.warprisoner.list:
+    description: Allows listing all active prisoners
+    default: op
+  ggvgoons.admin:
+    description: Full administrative access (grants all permissions)
+    default: op
 ```
 
-### Plugin Configuration (Planned)
-Future `config.yml` will include:
-- Offer expiry timeout
-- Prisoner movement radius
-- Team settings
-- Persistence options
+**Note:** Permission enforcement can be disabled in `config.yml` by setting `permissions.enabled: false` for OP-only mode.
+
+### Plugin Configuration
+The plugin generates a `config.yml` on first run with the following options:
+
+```yaml
+# GGvGoons Configuration
+
+# Prisoner System Settings
+prisoner:
+  # How long capture offers remain valid (seconds)
+  # Set to 0 to disable expiry
+  offer-expiry-timeout: 60
+  
+  # Whether to persist prisoner state across restarts
+  enable-persistence: true
+
+# Permission Settings
+permissions:
+  # Whether to enforce permissions (false = OP-only mode)
+  enabled: true
+```
+
+**Configuration Options:**
+- `prisoner.offer-expiry-timeout`: Time in seconds before capture offers expire (default: 60, set to 0 to disable)
+- `prisoner.enable-persistence`: Whether to save prisoner state to `prisoners.yml` on shutdown (default: true)
+- `permissions.enabled`: Whether to enforce permission nodes or use OP-only mode (default: true)
 
 ## For Developers
 
@@ -224,20 +252,20 @@ Output jar: `build/libs/GGvGoons-1.0.0.jar` — drop it into your Paper or Arcli
 ## Roadmap & TODO
 
 ### Current Limitations
-- [ ] **No persistence** - prisoner state resets on server restart
+- [x] ~~**No persistence**~~ - ✅ **IMPLEMENTED** - prisoner state now persists across restarts via YAML
 - [ ] **No team validation** - anyone can capture anyone
 - [ ] **No movement restrictions** - prisoners can walk away in Adventure mode
-- [ ] **No offer expiry** - capture offers never timeout
-- [ ] **No permission system** - all commands require OP status
+- [x] ~~**No offer expiry**~~ - ✅ **IMPLEMENTED** - capture offers now expire after configurable timeout
+- [x] ~~**No permission system**~~ - ✅ **IMPLEMENTED** - all commands now have permission nodes
 
 ### Planned Features
 
-#### Phase 1: Core Stability
-- [ ] Add YAML persistence for prisoner state across restarts
-- [ ] Implement offer expiry with configurable timeout
-- [ ] Add permission nodes to all commands
-- [ ] Create `config.yml` for customization
-- [ ] Add `/listprisoners` command to see all active prisoners
+#### Phase 1: Core Stability ✅ **COMPLETE**
+- [x] Add YAML persistence for prisoner state across restarts
+- [x] Implement offer expiry with configurable timeout
+- [x] Add permission nodes to all commands
+- [x] Create `config.yml` for customization
+- [x] Add `/listprisoners` command to see all active prisoners
 
 #### Phase 2: Teams System
 - [ ] Implement Teams module with Bukkit Scoreboard integration
@@ -283,9 +311,9 @@ Output jar: `build/libs/GGvGoons-1.0.0.jar` — drop it into your Paper or Arcli
 **Cause**: Combat mod overriding gamemode changes  
 **Solution**: Check your combat mod's config for gamemode protection settings and disable them
 
-**Problem**: Prisoner state lost on server restart  
-**Cause**: No persistence implemented yet (in-memory only)  
-**Solution**: This is a known limitation - persistence is planned for Phase 1
+**Problem**: Prisoner state lost on server restart
+**Cause**: Persistence is disabled in config.yml
+**Solution**: Enable persistence by setting `prisoner.enable-persistence: true` in `config.yml`
 
 **Problem**: Prisoners can still break blocks in Adventure mode  
 **Cause**: Some Forge mods may bypass Adventure mode restrictions  
@@ -307,11 +335,11 @@ Output jar: `build/libs/GGvGoons-1.0.0.jar` — drop it into your Paper or Arcli
 
 ## Notes / Future Improvements
 
-- **Permissions**: Anyone with OP can currently run any command. Add permission nodes and integrate with LuckPerms for rank-based access control.
+- ✅ ~~**Permissions**~~ - **IMPLEMENTED**: Full permission system with configurable enforcement and LuckPerms integration support
 - **Team validation**: No check yet that captor and target are on opposing teams. Once the Teams module exists, add that validation before `createOffer`.
-- **Persistence**: All module state is in-memory and resets on restart. If matches span restarts, persist prisoner data to YAML or SQLite in `onDisable`/`onEnable`.
+- ✅ ~~**Persistence**~~ - **IMPLEMENTED**: Prisoner state persists across restarts via YAML storage in `plugins/GGvGoons/prisoners.yml`
 - **Movement/inventory limits for prisoners**: Adventure mode alone won't fully cage someone. Consider a `PlayerMoveEvent` listener to bound them to a radius, or `PlayerInteractEvent` for tighter control.
-- **Offer expiry**: Capture offers never time out. Add a `BukkitRunnable` calling `manager.clearOffer(targetId)` after N seconds if you don't want them open indefinitely.
+- ✅ ~~**Offer expiry**~~ - **IMPLEMENTED**: Capture offers automatically expire after configurable timeout (default 60 seconds)
 - **Forge event integration**: For full Arclight compatibility with combat mods, may need to listen to Forge events in addition to Bukkit events.
 
 ## Contributing

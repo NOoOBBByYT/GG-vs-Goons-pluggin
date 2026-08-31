@@ -1,0 +1,17 @@
+# GGvGoons Configuration
+
+# Prisoner System Settings
+prisoner:
+  # How long capture offers remain valid (seconds)
+  # Set to 0 to disable expiry
+  offer-expiry-timeout: 60
+  
+  # Whether to persist prisoner state across restarts
+  enable-persistence: true
+
+# Permission Settings
+permissions:
+  # Whether to enforce permissions (false = OP-only mode)
+  enabled: true
+
+# Future settings will be added here as new modules are developed

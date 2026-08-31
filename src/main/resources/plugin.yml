@@ -8,6 +8,7 @@ commands:
   warprisoner:
     description: Take a player as a war prisoner
     usage: /<command> <player>
+    permission: ggvgoons.warprisoner.capture
   warprisoneraccept:
     description: Accept a war prisoner offer (internal)
     usage: /<command> <captorId>
@@ -17,6 +18,34 @@ commands:
   freeprisoner:
     description: Release your war prisoner
     usage: /<command> <player>
+    permission: ggvgoons.warprisoner.free
   executeprisoner:
     description: Execute your war prisoner
     usage: /<command> <player>
+    permission: ggvgoons.warprisoner.execute
+  listprisoners:
+    description: List all active war prisoners
+    usage: /<command>
+    permission: ggvgoons.warprisoner.list
+
+permissions:
+  ggvgoons.warprisoner.capture:
+    description: Allows capturing players as prisoners
+    default: op
+  ggvgoons.warprisoner.free:
+    description: Allows freeing prisoners
+    default: op
+  ggvgoons.warprisoner.execute:
+    description: Allows executing prisoners
+    default: op
+  ggvgoons.warprisoner.list:
+    description: Allows listing all active prisoners
+    default: op
+  ggvgoons.admin:
+    description: Full administrative access to all GGvGoons features
+    default: op
+    children:
+      ggvgoons.warprisoner.capture: true
+      ggvgoons.warprisoner.free: true
+      ggvgoons.warprisoner.execute: true
+      ggvgoons.warprisoner.list: true

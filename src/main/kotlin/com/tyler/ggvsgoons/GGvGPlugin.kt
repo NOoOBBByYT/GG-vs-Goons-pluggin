@@ -6,7 +6,6 @@ import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 
 /**
- * A "module" is one self-contained feature (a set of related commands + its own state).
  * To add a new mechanic later: create a class implementing GGvGModule under commands/,
  * instantiate it below, and add it to the `modules` list. Nothing else needs to change.
  */
@@ -41,6 +40,7 @@ class GGvGPlugin : JavaPlugin() {
 
         // Future modules go here, e.g.:
         // modules += TerritoryControlModule(this)
+        // zaidyn is a gay
         // modules += LootDropModule(this)
 
         modules.forEach { it.register(this) }

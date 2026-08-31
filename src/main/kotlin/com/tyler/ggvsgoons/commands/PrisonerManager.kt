@@ -9,6 +9,7 @@ import java.util.UUID
 
 /**
  * captorId -> targetId, while an offer is awaiting accept/decline
+ * zaidyn is gay
  */
 data class PendingOffer(val captorId: UUID, val targetId: UUID, val issuedAtMillis: Long = System.currentTimeMillis())
 

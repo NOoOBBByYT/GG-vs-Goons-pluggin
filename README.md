@@ -323,6 +323,5 @@ Contributions are welcome! When adding new modules:
 4. Test on both Paper and Arclight if possible
 5. Update this README with new features
 
-## License
-
-[Add your license here]
+## AI
+AI was used to contribute this project. This is only made for a short and fun server and not a serious project.

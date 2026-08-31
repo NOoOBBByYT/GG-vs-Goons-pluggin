@@ -2,13 +2,12 @@ package com.tyler.ggvsgoons.commands
 
 import com.tyler.ggvsgoons.GGvGModule
 import com.tyler.ggvsgoons.GGvGPlugin
-import dev.jorel.commandapi.CommandAPICommand
-import dev.jorel.commandapi.arguments.EntitySelectorArgument
-import dev.jorel.commandapi.arguments.StringArgument
-import dev.jorel.commandapi.executors.PlayerCommandExecutor
-import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.event.ClickEvent
-import net.kyori.adventure.text.format.NamedTextColor
+import net.md_5.bungee.api.ChatColor
+import net.md_5.bungee.api.chat.ClickEvent
+import net.md_5.bungee.api.chat.ComponentBuilder
+import org.bukkit.command.Command
+import org.bukkit.command.CommandExecutor
+import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import java.util.UUID
 
@@ -18,112 +17,183 @@ import java.util.UUID
  * future modules need to check prisoner status (e.g. blocking a territory
  * capture command while someone is imprisoned).
  */
-class WarPrisonerModule(plugin: GGvGPlugin) : GGvGModule {
+class WarPrisonerModule(private val plugin: GGvGPlugin) : GGvGModule {
 
     val manager = PrisonerManager(plugin)
 
     override fun register(plugin: GGvGPlugin) {
-        // /warprisoner <target>  — issue a capture offer
-        CommandAPICommand("warprisoner")
-            .withArguments(EntitySelectorArgument.OnePlayer("target"))
-            .executesPlayer(PlayerCommandExecutor { captor, args ->
-                val target = args.get("target") as Player
+        plugin.getCommand("warprisoner")?.setExecutor(WarPrisonerCommand(this, plugin))
+        plugin.getCommand("warprisoneraccept")?.setExecutor(WarPrisonerAcceptCommand(this, plugin))
+        plugin.getCommand("warprisonerdecline")?.setExecutor(WarPrisonerDeclineCommand(this, plugin))
+        plugin.getCommand("freeprisoner")?.setExecutor(FreePrisonerCommand(this, plugin))
+        plugin.getCommand("executeprisoner")?.setExecutor(ExecutePrisonerCommand(this, plugin))
+    }
+}
 
-                if (target.uniqueId == captor.uniqueId) {
-                    captor.sendMessage(Component.text("You can't take yourself prisoner.", NamedTextColor.RED))
-                    return@PlayerCommandExecutor
-                }
-                if (manager.isPrisoner(target.uniqueId)) {
-                    captor.sendMessage(Component.text("${target.name} is already someone's prisoner.", NamedTextColor.RED))
-                    return@PlayerCommandExecutor
-                }
-                if (!manager.createOffer(captor, target)) {
-                    captor.sendMessage(Component.text("${target.name} already has a pending offer.", NamedTextColor.RED))
-                    return@PlayerCommandExecutor
-                }
+// /warprisoner <target> — issue a capture offer
+class WarPrisonerCommand(private val module: WarPrisonerModule, private val plugin: GGvGPlugin) : CommandExecutor {
+    override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
+        if (sender !is Player) {
+            sender.sendMessage("${ChatColor.RED}Only players can use this command.")
+            return true
+        }
 
-                captor.sendMessage(Component.text("Capture offer sent to ${target.name}.", NamedTextColor.GRAY))
+        if (args.isEmpty()) {
+            sender.sendMessage("${ChatColor.RED}Usage: /warprisoner <player>")
+            return true
+        }
 
-                val captorIdStr = captor.uniqueId.toString()
-                val accept = Component.text("[Accept]", NamedTextColor.GREEN)
-                    .clickEvent(ClickEvent.runCommand("/warprisoneraccept $captorIdStr"))
-                val decline = Component.text("[Decline]", NamedTextColor.RED)
-                    .clickEvent(ClickEvent.runCommand("/warprisonerdecline $captorIdStr"))
+        val target = plugin.server.getPlayer(args[0])
+        if (target == null) {
+            sender.sendMessage("${ChatColor.RED}Player not found.")
+            return true
+        }
 
-                target.sendMessage(
-                    Component.text("${captor.name} wants to take you as a war prisoner. ", NamedTextColor.YELLOW)
-                        .append(accept).append(Component.text("  ")).append(decline)
-                )
-            })
-            .register()
+        if (target.uniqueId == sender.uniqueId) {
+            sender.sendMessage("${ChatColor.RED}You can't take yourself prisoner.")
+            return true
+        }
 
-        // Hidden command triggered by clicking [Accept]
-        CommandAPICommand("warprisoneraccept")
-            .withArguments(StringArgument("captorId"))
-            .executesPlayer(PlayerCommandExecutor { target, args ->
-                val captorId = runCatching { UUID.fromString(args.get("captorId") as String) }.getOrNull()
-                    ?: return@PlayerCommandExecutor
-                val confirmedCaptorId = manager.consumeOffer(target.uniqueId, captorId) ?: run {
-                    target.sendMessage(Component.text("That offer is no longer valid.", NamedTextColor.RED))
-                    return@PlayerCommandExecutor
-                }
-                val captor = plugin.server.getPlayer(confirmedCaptorId)
-                if (captor == null) {
-                    target.sendMessage(Component.text("Your captor logged off before you could accept.", NamedTextColor.RED))
-                    return@PlayerCommandExecutor
-                }
-                manager.takePrisoner(target, captor)
+        if (module.manager.isPrisoner(target.uniqueId)) {
+            sender.sendMessage("${ChatColor.RED}${target.name} is already someone's prisoner.")
+            return true
+        }
 
-                target.sendMessage(Component.text("You are now a war prisoner. You've been set to Adventure mode.", NamedTextColor.GOLD))
-                captor.sendMessage(Component.text("${target.name} accepted — they're your prisoner now.", NamedTextColor.GREEN))
-            })
-            .register()
+        if (!module.manager.createOffer(sender, target)) {
+            sender.sendMessage("${ChatColor.RED}${target.name} already has a pending offer.")
+            return true
+        }
 
-        // Hidden command triggered by clicking [Decline]
-        CommandAPICommand("warprisonerdecline")
-            .withArguments(StringArgument("captorId"))
-            .executesPlayer(PlayerCommandExecutor { target, args ->
-                val captorId = runCatching { UUID.fromString(args.get("captorId") as String) }.getOrNull()
-                    ?: return@PlayerCommandExecutor
-                val confirmedCaptorId = manager.consumeOffer(target.uniqueId, captorId) ?: run {
-                    target.sendMessage(Component.text("That offer is no longer valid.", NamedTextColor.RED))
-                    return@PlayerCommandExecutor
-                }
-                val captor = plugin.server.getPlayer(confirmedCaptorId)
-                target.sendMessage(Component.text("You declined. Better hope they don't just kill you now.", NamedTextColor.RED))
-                captor?.sendMessage(Component.text("${target.name} declined. It's your call what happens next.", NamedTextColor.YELLOW))
-            })
-            .register()
+        sender.sendMessage("${ChatColor.GRAY}Capture offer sent to ${target.name}.")
 
-        // /freeprisoner <target> — captor releases their prisoner
-        CommandAPICommand("freeprisoner")
-            .withArguments(EntitySelectorArgument.OnePlayer("target"))
-            .executesPlayer(PlayerCommandExecutor { captor, args ->
-                val target = args.get("target") as Player
-                if (manager.captorOf(target.uniqueId) != captor.uniqueId) {
-                    captor.sendMessage(Component.text("${target.name} isn't your prisoner.", NamedTextColor.RED))
-                    return@PlayerCommandExecutor
-                }
-                manager.releasePrisoner(target.uniqueId)
-                target.sendMessage(Component.text("You've been released.", NamedTextColor.GREEN))
-                captor.sendMessage(Component.text("You released ${target.name}.", NamedTextColor.GRAY))
-            })
-            .register()
+        val captorIdStr = sender.uniqueId.toString()
+        val message = ComponentBuilder("${sender.name} wants to take you as a war prisoner. ")
+            .color(ChatColor.YELLOW)
+            .append("[Accept]")
+            .color(ChatColor.GREEN)
+            .event(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/warprisoneraccept $captorIdStr"))
+            .append("  ")
+            .color(ChatColor.YELLOW)
+            .event(null as ClickEvent?)
+            .append("[Decline]")
+            .color(ChatColor.RED)
+            .event(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/warprisonerdecline $captorIdStr"))
+            .create()
 
-        // /executeprisoner <target> — captor ends the arrangement without restoring gamemode kindness;
-        // actual killing is up to the captor in-game, this just clears the tracked state
-        CommandAPICommand("executeprisoner")
-            .withArguments(EntitySelectorArgument.OnePlayer("target"))
-            .executesPlayer(PlayerCommandExecutor { captor, args ->
-                val target = args.get("target") as Player
-                if (manager.captorOf(target.uniqueId) != captor.uniqueId) {
-                    captor.sendMessage(Component.text("${target.name} isn't your prisoner.", NamedTextColor.RED))
-                    return@PlayerCommandExecutor
-                }
-                manager.clearPrisonerState(target.uniqueId)
-                target.sendMessage(Component.text("Your captor has ended your imprisonment. Good luck.", NamedTextColor.DARK_RED))
-                captor.sendMessage(Component.text("${target.name} is no longer marked as your prisoner.", NamedTextColor.GRAY))
-            })
-            .register()
+        target.spigot().sendMessage(*message)
+
+        return true
+    }
+}
+
+// Hidden command triggered by clicking [Accept]
+class WarPrisonerAcceptCommand(private val module: WarPrisonerModule, private val plugin: GGvGPlugin) : CommandExecutor {
+    override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
+        if (sender !is Player) return true
+        if (args.isEmpty()) return true
+
+        val captorId = runCatching { UUID.fromString(args[0]) }.getOrNull() ?: return true
+        val confirmedCaptorId = module.manager.consumeOffer(sender.uniqueId, captorId) ?: run {
+            sender.sendMessage("${ChatColor.RED}That offer is no longer valid.")
+            return true
+        }
+
+        val captor = plugin.server.getPlayer(confirmedCaptorId)
+        if (captor == null) {
+            sender.sendMessage("${ChatColor.RED}Your captor logged off before you could accept.")
+            return true
+        }
+
+        module.manager.takePrisoner(sender, captor)
+
+        sender.sendMessage("${ChatColor.GOLD}You are now a war prisoner. You've been set to Adventure mode.")
+        captor.sendMessage("${ChatColor.GREEN}${sender.name} accepted — they're your prisoner now.")
+
+        return true
+    }
+}
+
+// Hidden command triggered by clicking [Decline]
+class WarPrisonerDeclineCommand(private val module: WarPrisonerModule, private val plugin: GGvGPlugin) : CommandExecutor {
+    override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
+        if (sender !is Player) return true
+        if (args.isEmpty()) return true
+
+        val captorId = runCatching { UUID.fromString(args[0]) }.getOrNull() ?: return true
+        val confirmedCaptorId = module.manager.consumeOffer(sender.uniqueId, captorId) ?: run {
+            sender.sendMessage("${ChatColor.RED}That offer is no longer valid.")
+            return true
+        }
+
+        val captor = plugin.server.getPlayer(confirmedCaptorId)
+        sender.sendMessage("${ChatColor.RED}You declined. Better hope they don't just kill you now.")
+        captor?.sendMessage("${ChatColor.YELLOW}${sender.name} declined. It's your call what happens next.")
+
+        return true
+    }
+}
+
+// /freeprisoner <target> — captor releases their prisoner
+class FreePrisonerCommand(private val module: WarPrisonerModule, private val plugin: GGvGPlugin) : CommandExecutor {
+    override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
+        if (sender !is Player) {
+            sender.sendMessage("${ChatColor.RED}Only players can use this command.")
+            return true
+        }
+
+        if (args.isEmpty()) {
+            sender.sendMessage("${ChatColor.RED}Usage: /freeprisoner <player>")
+            return true
+        }
+
+        val target = plugin.server.getPlayer(args[0])
+        if (target == null) {
+            sender.sendMessage("${ChatColor.RED}Player not found.")
+            return true
+        }
+
+        if (module.manager.captorOf(target.uniqueId) != sender.uniqueId) {
+            sender.sendMessage("${ChatColor.RED}${target.name} isn't your prisoner.")
+            return true
+        }
+
+        module.manager.releasePrisoner(target.uniqueId)
+        target.sendMessage("${ChatColor.GREEN}You've been released.")
+        sender.sendMessage("${ChatColor.GRAY}You released ${target.name}.")
+
+        return true
+    }
+}
+
+// /executeprisoner <target> — captor ends the arrangement without restoring gamemode kindness;
+// actual killing is up to the captor in-game, this just clears the tracked state
+class ExecutePrisonerCommand(private val module: WarPrisonerModule, private val plugin: GGvGPlugin) : CommandExecutor {
+    override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
+        if (sender !is Player) {
+            sender.sendMessage("${ChatColor.RED}Only players can use this command.")
+            return true
+        }
+
+        if (args.isEmpty()) {
+            sender.sendMessage("${ChatColor.RED}Usage: /executeprisoner <player>")
+            return true
+        }
+
+        val target = plugin.server.getPlayer(args[0])
+        if (target == null) {
+            sender.sendMessage("${ChatColor.RED}Player not found.")
+            return true
+        }
+
+        if (module.manager.captorOf(target.uniqueId) != sender.uniqueId) {
+            sender.sendMessage("${ChatColor.RED}${target.name} isn't your prisoner.")
+            return true
+        }
+
+        module.manager.clearPrisonerState(target.uniqueId)
+        target.sendMessage("${ChatColor.DARK_RED}Your captor has ended your imprisonment. Good luck.")
+        sender.sendMessage("${ChatColor.GRAY}${target.name} is no longer marked as your prisoner.")
+
+        return true
     }
 }

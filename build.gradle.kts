@@ -13,7 +13,6 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT")
-    implementation("dev.jorel:commandapi-paper-shade:12.0.0")
 }
 
 kotlin {
@@ -32,8 +31,6 @@ tasks.processResources {
 tasks.shadowJar {
     archiveClassifier.set("")
     archiveFileName.set("GGvGoons-${project.version}.jar")
-    relocate("dev.jorel.commandapi", "com.tyler.ggvsgoons.commandapi")
-    mergeServiceFiles()
 }
 
 tasks.jar {

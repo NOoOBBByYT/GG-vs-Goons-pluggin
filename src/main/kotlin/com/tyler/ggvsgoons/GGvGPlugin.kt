@@ -1,8 +1,6 @@
 package com.tyler.ggvsgoons
 
 import com.tyler.ggvsgoons.commands.WarPrisonerModule
-import dev.jorel.commandapi.CommandAPI
-import dev.jorel.commandapi.CommandAPIPaperConfig
 import org.bukkit.plugin.java.JavaPlugin
 
 /**
@@ -21,14 +19,7 @@ class GGvGPlugin : JavaPlugin() {
 
     private val modules = mutableListOf<GGvGModule>()
 
-    override fun onLoad() {
-        // CommandAPI must be hooked in onLoad, before commands are registered
-        CommandAPI.onLoad(CommandAPIPaperConfig(this).silentLogs(true))
-    }
-
     override fun onEnable() {
-        CommandAPI.onEnable()
-
         warPrisoner = WarPrisonerModule(this)
         modules += warPrisoner
 
@@ -41,6 +32,6 @@ class GGvGPlugin : JavaPlugin() {
     }
 
     override fun onDisable() {
-        CommandAPI.onDisable()
+        logger.info("GGvGoons disabled")
     }
 }

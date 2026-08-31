@@ -29,6 +29,13 @@ Commands:
 
 1. Create a new class under `src/main/kotlin/com/tyler/ggvsgoons/commands/`
   implementing `GGvGModule`:
+  ```kotlin
+       class TerritoryModule(plugin: GGvGPlugin) : GGvGModule {
+       override fun register(plugin: GGvGPlugin) {
+           // CommandAPICommand("claimterritory")...
+       }
+   }
+  ```
 2. In `GGvGPlugin.onEnable()`, instantiate it and add it to `modules`.
 3. Build and drop the jar back in `plugins/`.
 

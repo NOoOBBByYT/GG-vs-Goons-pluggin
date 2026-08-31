@@ -1,6 +1,6 @@
 # GG-vs-Goons-plugin
 
-A modular Bukkit/Paper plugin for the GG vs Goons server, featuring a war prisoner system and team-based PvP mechanics.
+A modular Bukkit/Paper plugin for the GG vs Goons server, featuring a war prisoner system and more planned in the future.
 
 Built around a module system - each mechanic is a self-contained class, so adding new commands doesn't mean touching existing ones.
 

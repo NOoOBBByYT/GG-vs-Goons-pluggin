@@ -1,4 +1,4 @@
-# GG-vs-Goons-pluggin
+# GG-vs-Goons-plugin
 
 Bukkit/Paper Plugin for GG vs Goons server
 

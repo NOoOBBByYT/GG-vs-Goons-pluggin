@@ -1,30 +1,43 @@
 plugins {
     kotlin("jvm") version "1.9.24"
-    id("com.gradleup.shadow") version "8.1.1"
+    id("com.gradleup.shadow") version "8.3.3"
 }
 
-group = "com.tyler.ggvg"
+group = "com.tyler.ggvsgoons"
 version = "1.0.0"
 
 repositories {
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/")
-    maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
-    maven("https://jitpack.io") // CommandAPI
 }
 
 dependencies {
-    compileOnly("com.destroystokyo.paper:paper-api:1.21.1-R0.1-SNAPSHOT")
-    implementation("dev.jorel:commandapi-bukkit-shaded:9.5.3")
+    compileOnly("io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT")
+    implementation("dev.jorel:commandapi-paper-shade:12.0.0")
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
 }
 
-task.shadowJar {
-    archiveFileName.set("GGvGoon-${version }.jar")
-    relocate("dev.jorel.commandapi", "com.tyler.ggvg.commandapi")
+tasks.processResources {
+    val props = mapOf("version" to version)
+    inputs.properties(props)
+    filteringCharset = "UTF-8"
+    filesMatching("plugin.yml") {
+        expand(props)
+    }
+}
+
+tasks.shadowJar {
+    archiveClassifier.set("")
+    archiveFileName.set("GGvGoons-${project.version}.jar")
+    relocate("dev.jorel.commandapi", "com.tyler.ggvsgoons.commandapi")
+    mergeServiceFiles()
+}
+
+tasks.jar {
+    archiveClassifier.set("dev")
 }
 
 tasks.build {

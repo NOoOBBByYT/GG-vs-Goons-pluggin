@@ -51,6 +51,8 @@ Requires JDK 21.
 ./gradlew build
 ```
 
+On Windows: `gradlew.bat build`
+
 Output jar: `build/libs/GGvGoons-1.0.0.jar` — drop it into your Paper server's `plugins/` folder and restart. CommandAPI is shaded directly in, nothing else to install.
 
 ## Requirements

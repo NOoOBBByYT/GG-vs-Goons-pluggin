@@ -1,0 +1,5 @@
+name: GGvGoons
+version: '${version}'
+main: com.tyler.ggvsgoons.GGvGPlugin
+api-version: '1.21'
+author: Tyler

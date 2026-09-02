@@ -27,6 +27,10 @@ commands:
     description: List all active war prisoners
     usage: /<command>
     permission: ggvgoons.warprisoner.list
+  team:
+    description: Team management commands
+    usage: /<command> <join|leave|info|list|spawn|setspawn|chat> [args]
+    permission: ggvgoons.team.use
 
 permissions:
   ggvgoons.warprisoner.capture:
@@ -41,6 +45,12 @@ permissions:
   ggvgoons.warprisoner.list:
     description: Allows listing all active prisoners
     default: op
+  ggvgoons.team.use:
+    description: Allows using basic team commands
+    default: true
+  ggvgoons.team.admin:
+    description: Allows using team admin commands (setspawn)
+    default: op
   ggvgoons.admin:
     description: Full administrative access to all GGvGoons features
     default: op
@@ -49,3 +59,4 @@ permissions:
       ggvgoons.warprisoner.free: true
       ggvgoons.warprisoner.execute: true
       ggvgoons.warprisoner.list: true
+      ggvgoons.team.admin: true

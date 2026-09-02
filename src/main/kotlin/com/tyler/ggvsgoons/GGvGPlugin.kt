@@ -2,6 +2,7 @@ package com.tyler.ggvsgoons
 
 import com.tyler.ggvsgoons.commands.WarPrisonerModule
 import com.tyler.ggvsgoons.persistence.PrisonerPersistence
+import com.tyler.ggvsgoons.teams.TeamsModule
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 
@@ -16,6 +17,9 @@ interface GGvGModule {
 class GGvGPlugin : JavaPlugin() {
 
     lateinit var warPrisoner: WarPrisonerModule
+        private set
+
+    lateinit var teams: TeamsModule
         private set
 
     private val modules = mutableListOf<GGvGModule>()
@@ -37,6 +41,9 @@ class GGvGPlugin : JavaPlugin() {
         // Initialize modules
         warPrisoner = WarPrisonerModule(this, offerExpiryTimeout, permissionsEnabled)
         modules += warPrisoner
+
+        teams = TeamsModule(this)
+        modules += teams
 
         // Future modules go here, e.g.:
         // modules += TerritoryControlModule(this)
@@ -70,7 +77,10 @@ class GGvGPlugin : JavaPlugin() {
             val prisoners = warPrisoner.manager.getPrisoners()
             PrisonerPersistence.savePrisoners(prisoners, prisonersFile, logger)
         }
-        
+
+        // Save team membership and spawns
+        teams.onDisable()
+
         logger.info("GGvGoons disabled")
     }
 }

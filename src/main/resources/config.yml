@@ -9,6 +9,21 @@ prisoner:
   # Whether to persist prisoner state across restarts
   enable-persistence: true
 
+# Team System Settings
+teams:
+  # Allow players to switch teams after joining
+  allow-team-switching: true
+  
+  # Cooldown between team switches (seconds)
+  # Set to 0 to disable cooldown
+  team-switch-cooldown: 300
+  
+  # Team chat settings
+  chat:
+    enabled: true
+    prefix: "[TEAM] "
+    format: "{player}: {message}"
+
 # Permission Settings
 permissions:
   # Whether to enforce permissions (false = OP-only mode)

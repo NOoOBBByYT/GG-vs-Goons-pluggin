@@ -69,6 +69,25 @@ class WarPrisonerCommand(
             return true
         }
 
+        // Team validation: can only capture opposing team members
+        val captorTeam = plugin.teams.manager.getPlayerTeam(sender.uniqueId)
+        val targetTeam = plugin.teams.manager.getPlayerTeam(target.uniqueId)
+
+        if (captorTeam == null) {
+            sender.sendMessage("${ChatColor.RED}You must join a team first. Use /team join <gg|goons>")
+            return true
+        }
+
+        if (targetTeam == null) {
+            sender.sendMessage("${ChatColor.RED}${target.name} is not on a team and cannot be captured.")
+            return true
+        }
+
+        if (!plugin.teams.manager.areOpposingTeams(sender.uniqueId, target.uniqueId)) {
+            sender.sendMessage("${ChatColor.RED}You can only capture members of the opposing team!")
+            return true
+        }
+
         if (module.manager.isPrisoner(target.uniqueId)) {
             sender.sendMessage("${ChatColor.RED}${target.name} is already someone's prisoner.")
             return true

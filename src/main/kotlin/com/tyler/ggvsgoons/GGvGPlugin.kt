@@ -1,6 +1,8 @@
 package com.tyler.ggvsgoons
 
+import com.tyler.ggvsgoons.admin.AdminConfigModule
 import com.tyler.ggvsgoons.commands.WarPrisonerModule
+import com.tyler.ggvsgoons.factions.FactionsModule
 import com.tyler.ggvsgoons.persistence.PrisonerPersistence
 import com.tyler.ggvsgoons.teams.TeamsModule
 import org.bukkit.plugin.java.JavaPlugin
@@ -20,6 +22,12 @@ class GGvGPlugin : JavaPlugin() {
         private set
 
     lateinit var teams: TeamsModule
+        private set
+    
+    lateinit var factions: FactionsModule
+        private set
+    
+    lateinit var admin: AdminConfigModule
         private set
 
     private val modules = mutableListOf<GGvGModule>()
@@ -44,12 +52,16 @@ class GGvGPlugin : JavaPlugin() {
 
         teams = TeamsModule(this)
         modules += teams
+        
+        // Initialize factions module (Phase 4)
+        factions = FactionsModule(this)
+        modules += factions
+        
+        // Initialize admin configuration module (Phase 6)
+        admin = AdminConfigModule(this)
+        modules += admin
 
-        // Future modules go here, e.g.:
-        // modules += TerritoryControlModule(this)
-        // zaidyn is a gay
-        // modules += LootDropModule(this)
-
+        // Register all modules
         modules.forEach { it.register(this) }
         
         // Load persisted prisoner data if enabled
@@ -80,6 +92,16 @@ class GGvGPlugin : JavaPlugin() {
 
         // Save team membership and spawns
         teams.onDisable()
+        
+        // Save faction data if factions module is initialized
+        if (::factions.isInitialized) {
+            factions.onDisable()
+        }
+        
+        // Clean up admin module if initialized
+        if (::admin.isInitialized) {
+            admin.onDisable()
+        }
 
         logger.info("GGvGoons disabled")
     }

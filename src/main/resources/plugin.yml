@@ -31,6 +31,21 @@ commands:
     description: Team management commands
     usage: /<command> <join|leave|info|list|spawn|setspawn|chat> [args]
     permission: ggvgoons.team.use
+  faction:
+    description: Faction management commands
+    usage: /<command> <create|disband|info|list|invite|kick|etc> [args]
+    aliases: [f, fac]
+    permission: ggvgoons.faction.use
+  fc:
+    description: Faction chat shorthand
+    usage: /<command> <message>
+    aliases: [factionchat]
+    permission: ggvgoons.faction.chat
+  ggadmin:
+    description: Admin configuration and moderation commands
+    usage: /<command> <subcommand> [args]
+    aliases: [admin, ggconfig]
+    permission: ggvgoons.admin.use
 
 permissions:
   ggvgoons.warprisoner.capture:
@@ -51,6 +66,60 @@ permissions:
   ggvgoons.team.admin:
     description: Allows using team admin commands (setspawn)
     default: op
+  ggvgoons.faction.use:
+    description: Basic faction commands
+    default: true
+  ggvgoons.faction.create:
+    description: Create a faction
+    default: true
+  ggvgoons.faction.chat:
+    description: Use faction chat
+    default: true
+  ggvgoons.faction.home:
+    description: Use faction home teleport
+    default: true
+  ggvgoons.faction.admin:
+    description: Admin faction commands
+    default: op
+  ggvgoons.admin.use:
+    description: Access to admin commands
+    default: op
+  ggvgoons.admin.config:
+    description: Modify configuration
+    default: op
+  ggvgoons.admin.module:
+    description: Enable/disable modules
+    default: op
+  ggvgoons.admin.command:
+    description: Manage command restrictions
+    default: op
+  ggvgoons.admin.permission:
+    description: Manage permissions
+    default: op
+  ggvgoons.admin.moderate:
+    description: Player moderation actions
+    default: op
+  ggvgoons.admin.audit:
+    description: View audit logs
+    default: op
+  ggvgoons.admin.backup:
+    description: Create and restore backups
+    default: op
+  ggvgoons.admin.monitor:
+    description: Use monitoring tools
+    default: op
+  ggvgoons.admin.*:
+    description: All admin permissions
+    default: op
+    children:
+      ggvgoons.admin.config: true
+      ggvgoons.admin.module: true
+      ggvgoons.admin.command: true
+      ggvgoons.admin.permission: true
+      ggvgoons.admin.moderate: true
+      ggvgoons.admin.audit: true
+      ggvgoons.admin.backup: true
+      ggvgoons.admin.monitor: true
   ggvgoons.admin:
     description: Full administrative access to all GGvGoons features
     default: op
@@ -60,3 +129,5 @@ permissions:
       ggvgoons.warprisoner.execute: true
       ggvgoons.warprisoner.list: true
       ggvgoons.team.admin: true
+      ggvgoons.faction.admin: true
+      ggvgoons.admin.*: true

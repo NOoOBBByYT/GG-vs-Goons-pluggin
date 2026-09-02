@@ -29,4 +29,102 @@ permissions:
   # Whether to enforce permissions (false = OP-only mode)
   enabled: true
 
-# Future settings will be added here as new modules are developed
+# Faction System Settings
+factions:
+  # Enable/disable entire faction system
+  enabled: true
+  
+  # Maximum factions per team
+  max-factions-per-team: 3
+  
+  # Faction creation
+  creation:
+    # Minimum team members required to create faction
+    min-team-members: 3
+  
+  # Member limits
+  members:
+    # Default max members per faction
+    default-max-members: 10
+    
+    # Allow factions to increase member limit
+    allow-expansion: true
+    max-expansion-limit: 20
+  
+  # Faction homes
+  homes:
+    enabled: true
+    teleport-warmup: 5  # seconds
+    teleport-cooldown: 300  # seconds (5 minutes)
+    cancel-on-damage: true
+  
+  # Faction chat
+  chat:
+    enabled: true
+    prefix: "[FACTION] "
+    format: "{faction} {player}: {message}"
+  
+  # Invite expiry time
+  invite-expiry-seconds: 60
+  
+  # Persistence
+  enable-persistence: true
+
+# Admin Configuration System Settings
+admin:
+  # Enable admin configuration system
+  enabled: true
+  
+  # Audit logging
+  audit:
+    enabled: true
+    log-file: "audit.log"
+    retention-days: 90
+    log-player-actions: true
+    log-config-changes: true
+    log-mod-actions: true
+  
+  # Backups
+  backups:
+    enabled: true
+    auto-backup: true
+    auto-backup-interval: 3600  # seconds (1 hour)
+    max-backups: 10
+    backup-directory: "backups"
+  
+  # Command restrictions
+  commands:
+    allow-admin-bypass: true
+    custom-disable-message: "&cThis command is currently disabled."
+  
+  # Permissions
+  permissions:
+    use-luckperms: true  # Use LuckPerms if available
+    fallback-to-internal: true
+  
+  # Monitoring
+  monitoring:
+    enabled: true
+    performance-warnings: true
+    error-notifications: true
+    notify-admins: true
+
+# Discord Integration Settings (Phase 5 - Coming Soon)
+discord:
+  enabled: false
+  connection:
+    websocket:
+      enabled: false
+      host: "localhost"
+      port: 8080
+      reconnect-delay: 5
+  chat-bridge:
+    enabled: false
+  notifications:
+    prisoners:
+      enabled: false
+    wars:
+      enabled: false
+  statistics:
+    enabled: false
+    sync-interval: 300
